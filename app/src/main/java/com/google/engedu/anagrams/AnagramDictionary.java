@@ -40,12 +40,14 @@ public class AnagramDictionary {
     private Set<String> wordSet;
     private Map<String, List<String>> lettersToWord;
     private Map<Integer, List<String>> sizeToWords;
+    private int wordLength;
 
     public AnagramDictionary(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
         wordList=new ArrayList<>();
         wordSet=new HashSet<>();
         lettersToWord=new HashMap<>();
+        sizeToWords=new HashMap<>();
         String line;
         while((line = in.readLine()) != null) {
             String word = line.trim();
@@ -62,6 +64,7 @@ public class AnagramDictionary {
             wordList.add(word);
             wordSet.add(word);
         }
+        wordLength=DEFAULT_WORD_LENGTH;
     }
 
     public boolean isGoodWord(String word, String base) {
@@ -103,18 +106,20 @@ public class AnagramDictionary {
     }
 
     public String pickGoodStarterWord() {
-        int size=wordList.size(), start = random.nextInt(size);
+        List<String> list=sizeToWords.get(wordLength);
+        wordLength=Math.min(MAX_WORD_LENGTH, wordLength+1);
+        int size=list.size(), start = random.nextInt(size);
         for(int i=start, j=start; ; i--, j++){
             if(i>=0){
-                String word=wordList.get(i);
+                String word=list.get(i);
                 if (getAnagramsWithOneMoreLetter(word).size()>=MIN_NUM_ANAGRAMS) {
-                    return wordList.get(i);
+                    return list.get(i);
                 }
             }
             if(j<size){
-                String word=wordList.get(j);
+                String word=list.get(j);
                 if (getAnagramsWithOneMoreLetter(word).size()>=MIN_NUM_ANAGRAMS) {
-                    return wordList.get(j);
+                    return list.get(j);
                 }
             }
         }
