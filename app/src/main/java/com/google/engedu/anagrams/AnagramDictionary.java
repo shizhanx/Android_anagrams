@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -38,6 +39,7 @@ public class AnagramDictionary {
     private List<String> wordList;
     private Set<String> wordSet;
     private Map<String, List<String>> lettersToWord;
+    private Map<Integer, List<String>> sizeToWords;
 
     public AnagramDictionary(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
@@ -48,10 +50,15 @@ public class AnagramDictionary {
         while((line = in.readLine()) != null) {
             String word = line.trim();
             String sortedWord=sortLetters(word);
+            int size=word.length();
             if(!lettersToWord.containsKey(sortedWord)){
-                lettersToWord.put(sortedWord, new ArrayList<String>());
+                lettersToWord.put(sortedWord, new LinkedList<String>());
+            }
+            if(!sizeToWords.containsKey(size)){
+                sizeToWords.put(size, new LinkedList<String>());
             }
             lettersToWord.get(sortedWord).add(word);
+            sizeToWords.get(size).add(word);
             wordList.add(word);
             wordSet.add(word);
         }
