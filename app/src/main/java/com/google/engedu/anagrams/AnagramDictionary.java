@@ -15,6 +15,8 @@
 
 package com.google.engedu.anagrams;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -33,11 +35,13 @@ public class AnagramDictionary {
     private static final int DEFAULT_WORD_LENGTH = 3;
     private static final int MAX_WORD_LENGTH = 7;
     private Random random = new Random();
+    private List<String> wordList;
     private Set<String> wordSet;
     private Map<String, List<String>> lettersToWord;
 
     public AnagramDictionary(Reader reader) throws IOException {
         BufferedReader in = new BufferedReader(reader);
+        wordList=new ArrayList<>();
         wordSet=new HashSet<>();
         lettersToWord=new HashMap<>();
         String line;
@@ -48,6 +52,7 @@ public class AnagramDictionary {
                 lettersToWord.put(sortedWord, new ArrayList<String>());
             }
             lettersToWord.get(sortedWord).add(word);
+            wordList.add(word);
             wordSet.add(word);
         }
     }
@@ -60,8 +65,9 @@ public class AnagramDictionary {
         ArrayList<String> result = new ArrayList<>();
         String compareWord=sortLetters(targetWord);
         for(String word: wordSet){
-            if(compareWord.equals(sortLetters(word)));
-            result.add(word);
+            if(compareWord.equals(sortLetters(word))) {
+                result.add(word);
+            }
         }
         return result;
     }
@@ -79,8 +85,10 @@ public class AnagramDictionary {
             Arrays.sort(arr);
             String s=new String(arr);
             if (lettersToWord.containsKey(s)) {
-                for(String anagrams: lettersToWord.get(s)){
-                    result.add(anagrams);
+                for(String anagram: lettersToWord.get(s)){
+                    if (!anagram.contains(word)) {
+                        result.add(anagram);
+                    }
                 }
             }
         }
@@ -88,6 +96,20 @@ public class AnagramDictionary {
     }
 
     public String pickGoodStarterWord() {
-        return "ceab";
+        int size=wordList.size(), start = random.nextInt(size);
+        for(int i=start, j=start; ; i--, j++){
+            if(i>=0){
+                String word=wordList.get(i);
+                if (getAnagramsWithOneMoreLetter(word).size()>=MIN_NUM_ANAGRAMS) {
+                    return wordList.get(i);
+                }
+            }
+            if(j<size){
+                String word=wordList.get(j);
+                if (getAnagramsWithOneMoreLetter(word).size()>=MIN_NUM_ANAGRAMS) {
+                    return wordList.get(j);
+                }
+            }
+        }
     }
 }
