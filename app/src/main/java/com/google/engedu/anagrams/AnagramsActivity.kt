@@ -19,6 +19,7 @@ import android.os.Bundle
 import android.text.Html
 import android.text.InputType
 import android.text.TextUtils
+import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -31,13 +32,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.util.*
 
 class AnagramsActivity : AppCompatActivity() {
-    private var dictionary: AnagramDictionary? = null
+    private lateinit var dictionary: AnagramDictionary
     private var currentWord: String? = null
-    private var anagrams: List<String?>? = null
+    private var anagrams: MutableList<String> = mutableListOf()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_anagrams)
@@ -68,11 +71,11 @@ class AnagramsActivity : AppCompatActivity() {
     private fun processWord(editText: EditText) {
         val resultView = findViewById<View>(R.id.resultView) as TextView
         var word = editText.text.toString().trim { it <= ' ' }.toLowerCase()
-        if (word.length == 0) {
+        if (word.isEmpty()) {
             return
         }
         var color = "#cc0029"
-        if (dictionary!!.isGoodWord(word, currentWord) && anagrams!!.contains(word)) {
+        if (dictionary.isGoodWord(word, currentWord) && anagrams.contains(word)) {
             anagrams.remove(word)
             color = "#00aa29"
         } else {
@@ -106,8 +109,9 @@ class AnagramsActivity : AppCompatActivity() {
         val editText = findViewById<View>(R.id.editText) as EditText
         val resultView = findViewById<View>(R.id.resultView) as TextView
         if (currentWord == null) {
-            currentWord = dictionary!!.pickGoodStarterWord()
-            anagrams = dictionary!!.getAnagramsWithOneMoreLetter(currentWord!!)
+            currentWord = dictionary.pickGoodStarterWord()
+            anagrams = dictionary.getAnagramsWithOneMoreLetter(currentWord!!)
+            Log.d("sb", anagrams.toString())
             gameStatus.text = Html.fromHtml(String.format(START_MESSAGE, currentWord!!.toUpperCase(), currentWord))
             fab.setImageResource(android.R.drawable.ic_menu_help)
             fab.hide()
@@ -122,7 +126,7 @@ class AnagramsActivity : AppCompatActivity() {
             editText.isEnabled = false
             fab.setImageResource(android.R.drawable.ic_media_play)
             currentWord = null
-            resultView.append(TextUtils.join("\n", anagrams!!))
+            resultView.append(TextUtils.join("\n", anagrams))
             gameStatus.append(" Hit 'Play' to start again")
         }
         return true

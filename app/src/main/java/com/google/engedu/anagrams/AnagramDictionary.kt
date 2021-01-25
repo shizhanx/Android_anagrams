@@ -14,17 +14,19 @@
  */
 package com.google.engedu.anagrams
 
+import android.util.Log
 import java.io.BufferedReader
 import java.io.Reader
 import java.util.*
+import kotlin.random.Random
 
-class AnagramDictionary(reader: Reader?) {
-    private val random = Random()
+class AnagramDictionary(reader: Reader) {
     private val wordList: MutableList<String>
     private val wordSet: MutableSet<String>
     private val lettersToWord: MutableMap<String, MutableList<String>?>
     private val sizeToWords: MutableMap<Int, MutableList<String>>
     private var wordLength: Int
+
     fun isGoodWord(word: String, base: String?): Boolean {
         return wordSet.contains(word) && !word.contains(base!!)
     }
@@ -42,17 +44,15 @@ class AnagramDictionary(reader: Reader?) {
 
     private fun sortLetters(s: String): String {
         val a = s.toCharArray()
-        Arrays.sort(a)
+        a.sort()
         return String(a)
     }
 
-    fun getAnagramsWithOneMoreLetter(word: String): List<String> {
-        val result = ArrayList<String>()
+    fun getAnagramsWithOneMoreLetter(word: String): MutableList<String> {
+        val result = mutableListOf<String>()
         var c = 'a'
         while (c <= 'z') {
-            val arr = (word + c).toCharArray()
-            Arrays.sort(arr)
-            val s = String(arr)
+            val s: String = sortLetters(word + c)
             if (lettersToWord.containsKey(s)) {
                 for (anagram in lettersToWord[s]!!) {
                     if (!anagram.contains(word)) {
@@ -66,23 +66,23 @@ class AnagramDictionary(reader: Reader?) {
     }
 
     fun pickGoodStarterWord(): String {
-        val list: List<String>? = sizeToWords[wordLength]
-        wordLength = Math.min(MAX_WORD_LENGTH, wordLength + 1)
-        val size = list!!.size
-        val start = random.nextInt(size)
+        val list: List<String> = sizeToWords[wordLength]!!
+        wordLength = (wordLength + 1).coerceAtMost(MAX_WORD_LENGTH)
+        val size = list.size
+        val start = Random.nextInt(size)
         var i = start
         var j = start
         while (true) {
             if (i >= 0) {
                 val word = list[i]
                 if (getAnagramsWithOneMoreLetter(word).size >= MIN_NUM_ANAGRAMS) {
-                    return list[i]
+                    return word
                 }
             }
             if (j < size) {
                 val word = list[j]
                 if (getAnagramsWithOneMoreLetter(word).size >= MIN_NUM_ANAGRAMS) {
-                    return list[j]
+                    return word
                 }
             }
             i--
@@ -98,20 +98,20 @@ class AnagramDictionary(reader: Reader?) {
 
     init {
         val `in` = BufferedReader(reader)
-        wordList = ArrayList()
-        wordSet = HashSet()
-        lettersToWord = HashMap()
-        sizeToWords = HashMap()
-        var line: String
+        wordList = mutableListOf()
+        wordSet = mutableSetOf()
+        lettersToWord = mutableMapOf()
+        sizeToWords = mutableMapOf()
+        var line: String?
         while (`in`.readLine().also { line = it } != null) {
-            val word = line.trim { it <= ' ' }
+            val word = line!!.trim { it <= ' ' }
             val sortedWord = sortLetters(word)
             val size = word.length
             if (!lettersToWord.containsKey(sortedWord)) {
-                lettersToWord[sortedWord] = LinkedList()
+                lettersToWord[sortedWord] = mutableListOf()
             }
             if (!sizeToWords.containsKey(size)) {
-                sizeToWords[size] = LinkedList()
+                sizeToWords[size] = mutableListOf()
             }
             lettersToWord[sortedWord]!!.add(word)
             sizeToWords[size]!!.add(word)
